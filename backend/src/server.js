@@ -22,11 +22,53 @@ app.use(bodyParser());
 
 const users = data;
 
+// update users by email
+app.put('/users/update', validations.findByEmail, validations.userBody, (req, res) => {
 
+
+    const index = users.findIndex((usr) => {
+        if (usr.email === req.query.email) {
+            return usr;
+        }
+    });
+    
+    // we must persist ID.
+    const newUser = {id: users[index].id, ...req.body};
+    users.splice(index, 1, newUser);
+
+    res.json({
+        message: 'Updated',
+        user: newUser
+    });
+
+});
+
+app.put('/is_admin', validations.findByEmail, (req, res) => {
+    
+    let index = null;
+    const [actualUser] = users.filter((usr, i) => {
+        if (usr.email === req.query.email) {
+            this.index = i;
+            return usr;
+        }
+    });
+
+    actualUser.is_admin = req.body.is_admin;
+
+    users.splice(index, 1, actualUser);
+
+    res.json({
+        message: 'Updated!',
+        user: actualUser
+    });
+
+});
+
+
+// add new users
 app.post('/users', validations.userBody, validations.alreadyExist, (req, res) => {
 
     const user = {...req.body};
-    console.log(user);
 
     users.push(user);
     res.json({

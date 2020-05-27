@@ -1,5 +1,37 @@
 const users = require('../assets/users.json');
 
+// USERS validations, Authentication
+const validateUserPass = (req, res, next) => {
+    const {email, password} = req.body;
+    
+    const [userExist] = users.filter(user => {
+        if (user.email === email && user.password === password){
+            return user;
+        }
+    });
+
+    if (!userExist) {
+        return res.status(409).json({error: 'Please verify username or password'})
+    }
+
+    next();
+}
+
+// Token validation
+
+const verifyToken = (req, res, next) => {
+    try{
+        const token = req.headers.authorization.split(' ')[1];
+        const verifyToken = jwt.verify(token, 'MyS3cr3t');
+        if (verifyToken) {
+            req.email = verifyToken.email;
+            return next();
+        }
+    } catch (e) {
+        res.status(409).json({error: 'Session expired or User dont have permissions to access'})
+    }
+}
+
 const userBody = (req, res, next) => {
     const { id, name, lastname, email, password } = req.body;
 
@@ -49,4 +81,4 @@ const findByEmail = (req, res, next) => {
     next();
 }
 
-module.exports = { userBody, alreadyExist, findByEmail };
+module.exports = { userBody, alreadyExist, findByEmail, validateUserPass, verifyToken };

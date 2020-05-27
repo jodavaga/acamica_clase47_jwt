@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
+const jwt = require('jsonwebtoken');
+
 // Middlewares
 const validations = require('./validations/user.validations');
 
@@ -21,6 +23,17 @@ app.use(bodyParser());
 // }
 
 const users = data;
+const mySecret = 'MyS3cr3t';
+
+// Login by email and pass
+app.post('/login', validations.validateUserPass, (req, res) => {
+
+    const token = jwt.sign({
+        email: req.body.email
+        }, mySecret);
+
+    res.json({token: token});
+});
 
 // update users by email
 app.put('/users/update', validations.findByEmail, validations.userBody, (req, res) => {

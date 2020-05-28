@@ -11,7 +11,7 @@ const data = require('./assets/users.json');
 
 const app = express();
 
-app.use(bodyParser());
+app.use(bodyParser.json());
 
 // --------------- MOCK interface
 // {
@@ -28,11 +28,30 @@ const mySecret = 'MyS3cr3t';
 // Login by email and pass
 app.post('/login', validations.validateUserPass, (req, res) => {
 
-    const token = jwt.sign({
-        email: req.body.email
-        }, mySecret);
+    const email = req.body.email;
+
+    const token = jwt.sign(email, mySecret);
 
     res.json({token: token});
+});
+
+app.get('/allUsers', validations.verifyToken, (req, res) => {
+
+    const userEmail = req.query.mail;
+
+    console.log('el email', userEmail);
+
+    const [isAdmin] = users.filter(elem => {
+        if (elem.email === userEmail && elem.is_admin) {
+            return elem;
+        }
+    });
+
+    if (!isAdmin) {
+        return res.status(406).json({error: 'Solo administradores pueden acceder'})
+    }
+
+    return res.json(users);
 });
 
 // update users by email
@@ -93,7 +112,7 @@ app.post('/users', validations.userBody, validations.alreadyExist, (req, res) =>
 
 app.get('/users', (req, res) => {
     res.json(users);
-})
+});
 
 
 app.listen(3000, () => {

@@ -1,4 +1,5 @@
 const users = require('../assets/users.json');
+const jwt = require('jsonwebtoken');
 
 // USERS validations, Authentication
 const validateUserPass = (req, res, next) => {
@@ -24,13 +25,14 @@ const verifyToken = (req, res, next) => {
         const token = req.headers.authorization.split(' ')[1];
         const verifyToken = jwt.verify(token, 'MyS3cr3t');
         if (verifyToken) {
-            req.email = verifyToken.email;
+            req.query.email = verifyToken.email;
             return next();
         }
     } catch (e) {
-        res.status(409).json({error: 'Session expired or User dont have permissions to access'})
+        return res.status(409).json({error: 'Session expired or User dont have permissions to access'})
     }
 }
+
 
 const userBody = (req, res, next) => {
     const { id, name, lastname, email, password } = req.body;
